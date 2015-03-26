@@ -4,6 +4,7 @@ var path = require('path');
 var _ = require('lodash');
 var fs = require('fs');
 var co = require('co');
+var st = require('st');
 var browserify = require('browserify');
 var watchify = require('watchify');
 var UglifyJs = require('uglify-js');
@@ -63,15 +64,26 @@ function cachePromise(fn) {
     }
 };
 
+var serveStatic = st(__dirname);
 server.on('request', co.wrap(function * (req, res) {
     req.url = req.url.replace(/\/+/g, '/');
+    if (req.url.indexOf('/assets/') === 0 ||
+        req.url.indexOf('/assets/') === 0) {
+        return serveStatic(req, res);
+    }
     if (req.url.indexOf('/browser.js') === 0) {
         res.setHeader('Content-Type',
             'application/javascript; charset=utf-8');
         return res.end(yield getClientScript());
+    } else if (req.url === '/') {
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.end(yield getClientSource());
+    } else {
+        res.writeHead(302, {
+            'Location': '/'
+        });
+        res.end();
     }
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.end(yield getClientSource());
 }));
 
 server.listen(28693);
