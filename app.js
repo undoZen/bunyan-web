@@ -68,7 +68,7 @@ var serveStatic = st(__dirname);
 server.on('request', co.wrap(function * (req, res) {
     req.url = req.url.replace(/\/+/g, '/');
     if (req.url.indexOf('/assets/') === 0 ||
-        req.url.indexOf('/assets/') === 0) {
+        req.url.indexOf('/node_modules/') === 0) {
         return serveStatic(req, res);
     }
     if (req.url.indexOf('/browser.js') === 0) {
