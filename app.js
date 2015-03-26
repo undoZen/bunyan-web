@@ -1,9 +1,11 @@
 'use strict';
 var http = require('http');
 var path = require('path');
+var _ = require('lodash');
 var fs = require('fs');
 var co = require('co');
 var browserify = require('browserify');
+var watchify = require('watchify');
 var UglifyJs = require('uglify-js');
 global.Promise = require('bluebird');
 var env = process.env.NODE_ENV || 'development';
@@ -20,10 +22,12 @@ var getClientSource = cachePromise(function (resolve, reject) {
 });
 
 var getClientScript = cachePromise(function (resolve, reject) {
-    var b = browserify({
+    //var br = ON_PRODUCTION ? browserify : watchify;
+    var b = browserify(_.assign({
         basedir: __dirname
-    });
+    }, watchify.args));
     b.add('./browser.js');
+    if (!ON_PRODUCTION) b = watchify(b);
     b.bundle(function (err, source) {
         if (err) return reject(err);
         source = source.toString('utf-8');
